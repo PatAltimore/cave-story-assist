@@ -58,6 +58,7 @@ function parseTsc(file, encoding) {
 
 // ---------------------------------------------------------------- dictionary
 
+const jlpt = JSON.parse(fs.readFileSync(path.join(here, "cache/jlpt.json"), "utf8"));
 const jmFile = fs.readdirSync(path.join(here, 'cache/jm')).find((f) => f.endsWith('.json'));
 console.log('loading JMdict', jmFile);
 const jm = JSON.parse(fs.readFileSync(path.join(here, 'cache/jm', jmFile), 'utf8'));
@@ -105,7 +106,7 @@ function lookup(forms, kpos) {
 		const senses = hit.e.sense.slice(0, 3);
 		const gloss = senses.map((s) => s.gloss.slice(0, 2).map((g) => g.text).join(', ')).join('; ');
 		const pos = [...new Set(hit.e.sense[0].partOfSpeech.map((p) => POS[p]).filter(Boolean))].join(', ');
-		return { g: gloss, p: pos, kana: hit.e.kana[0].text };
+		return { g: gloss, p: pos, kana: hit.e.kana[0].text, common: hit.common };
 	}
 	return null;
 }
@@ -137,7 +138,13 @@ function wordId(tok) {
 	if (wordIds.has(key)) return wordIds.get(key);
 	const info = tok.pos === '記号' ? null : lookup([base, tok.surface_form], tok.pos);
 	const w = { b: base };
-	if (info) { w.g = info.g; if (info.p) w.p = info.p; if (info.kana !== base) w.r = info.kana; }
+	if (info) {
+		w.g = info.g; if (info.p) w.p = info.p; if (info.kana !== base) w.r = info.kana;
+		if (info.common) w.c = 1;
+	}
+	// JLPT level (Tanos lists, via Bluskyo/JLPT_Vocabulary): prefer the entry whose reading matches
+	const jl = jlpt[base] || (info && jlpt[info.kana]);
+	if (jl) w.l = (jl.find((x) => info && x.reading === info.kana) || jl[0]).level;
 	words.push(w);
 	wordIds.set(key, words.length - 1);
 	return words.length - 1;
@@ -190,6 +197,8 @@ for (const rel of files) {
 
 // the engine reports text exactly as the English script, so keep: e = normalized key, t = display text
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
-fs.writeFileSync(outFile, JSON.stringify({ words, scripts: result }));
+const stagesFile = path.join(jpDir, "stage-names.json");
+const stages = fs.existsSync(stagesFile) ? JSON.parse(fs.readFileSync(stagesFile, "utf8")) : {};
+fs.writeFileSync(outFile, JSON.stringify({ words, scripts: result, stages }));
 console.log(`events ${nEvents}, aligned ${aligned} (${((100 * aligned) / nEvents).toFixed(1)}%), ops ${ops}, words ${words.length}`);
 console.log(`wrote ${outFile} (${(fs.statSync(outFile).size / 1e6).toFixed(2)} MB)`);

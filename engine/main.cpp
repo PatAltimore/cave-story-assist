@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+extern "C++" void assist_frame_hook(void);
 #endif
 #include <unistd.h>
 #include "graphics/safemode.h"
@@ -259,6 +260,9 @@ int32_t nexttick = 0;
 		if (timeRemaining <= 0 || game.ffwdtime)
 		{
 			run_tick();
+			#ifdef __EMSCRIPTEN__
+			assist_frame_hook();	// web assist: rewind snapshots / restore (see assist.cpp)
+			#endif
 			
 			// try to "catch up" if something else on the system bogs us down for a moment.
 			// but if we get really far behind, it's ok to start dropping frames

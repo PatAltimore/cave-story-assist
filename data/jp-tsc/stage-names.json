@@ -1,0 +1,382 @@
+{
+ "0": {
+  "jp": "無",
+  "en": "Null"
+ },
+ "Pens1": {
+  "jp": "アーサーの家",
+  "en": "Arthur's House"
+ },
+ "Eggs": {
+  "jp": "タマゴ回廊",
+  "en": "Egg Corridor"
+ },
+ "EggX": {
+  "jp": "タマゴ No.00",
+  "en": "Egg No. 00"
+ },
+ "Egg6": {
+  "jp": "タマゴ No.06",
+  "en": "Egg No. 06"
+ },
+ "EggR": {
+  "jp": "タマゴ監視室",
+  "en": "Egg Observation Room"
+ },
+ "Weed": {
+  "jp": "クサムラ",
+  "en": "Grasstown"
+ },
+ "Santa": {
+  "jp": "サンタの家",
+  "en": "Santa's House"
+ },
+ "Chako": {
+  "jp": "チャコの家",
+  "en": "Chaco's House"
+ },
+ "MazeI": {
+  "jp": "迷宮Ｉ",
+  "en": "Labyrinth I"
+ },
+ "Sand": {
+  "jp": "砂区",
+  "en": "Sand Zone"
+ },
+ "Mimi": {
+  "jp": "ミミガーの村",
+  "en": "Mimiga Village"
+ },
+ "Cave": {
+  "jp": "最初の洞窟",
+  "en": "First Cave"
+ },
+ "Start": {
+  "jp": "スタート地点",
+  "en": "Start Point"
+ },
+ "Barr": {
+  "jp": "バラック小屋",
+  "en": "Shack"
+ },
+ "Pool": {
+  "jp": "貯水池",
+  "en": "Reservoir"
+ },
+ "Cemet": {
+  "jp": "はかば",
+  "en": "Graveyard"
+ },
+ "Plant": {
+  "jp": "山下農園",
+  "en": "Yamashita Farm"
+ },
+ "Shelt": {
+  "jp": "シェルター",
+  "en": "Shelter"
+ },
+ "Comu": {
+  "jp": "集会場",
+  "en": "Assembly Hall"
+ },
+ "MiBox": {
+  "jp": "セーブポイント",
+  "en": "Save Point"
+ },
+ "EgEnd1": {
+  "jp": "タマゴ回廊の個室",
+  "en": "Side Room"
+ },
+ "Cthu": {
+  "jp": "クトゥルーの住処",
+  "en": "Cthulhu's Abode"
+ },
+ "Egg1": {
+  "jp": "タマゴ No.01",
+  "en": "Egg No. 01"
+ },
+ "Pens2": {
+  "jp": "アーサーの家",
+  "en": "Arthur's House"
+ },
+ "Malco": {
+  "jp": "電源室",
+  "en": "Power Room"
+ },
+ "WeedS": {
+  "jp": "セーブポイント",
+  "en": "Save Point"
+ },
+ "WeedD": {
+  "jp": "処刑室",
+  "en": "Execution Chamber"
+ },
+ "Frog": {
+  "jp": "ガム",
+  "en": "Gum"
+ },
+ "Curly": {
+  "jp": "砂区駐在所",
+  "en": "Sand Zone Residence"
+ },
+ "WeedB": {
+  "jp": "クサムラの小屋",
+  "en": "Grasstown Hut"
+ },
+ "Stream": {
+  "jp": "大動脈",
+  "en": "Main Artery"
+ },
+ "CurlyS": {
+  "jp": "小部屋",
+  "en": "Small Room"
+ },
+ "Jenka1": {
+  "jp": "ジェンカの家",
+  "en": "Jenka's House"
+ },
+ "Dark": {
+  "jp": "廃屋",
+  "en": "Deserted House"
+ },
+ "Gard": {
+  "jp": "砂区倉庫",
+  "en": "Sand Zone Storehouse"
+ },
+ "Jenka2": {
+  "jp": "ジェンカの家",
+  "en": "Jenka's House"
+ },
+ "SandE": {
+  "jp": "砂区",
+  "en": "Sand Zone"
+ },
+ "MazeH": {
+  "jp": "迷宮Ｈ",
+  "en": "Labyrinth H"
+ },
+ "MazeW": {
+  "jp": "迷宮Ｗ",
+  "en": "Labyrinth W"
+ },
+ "MazeO": {
+  "jp": "キャンプ",
+  "en": "Camp"
+ },
+ "MazeD": {
+  "jp": "診療所跡",
+  "en": "Clinic Ruins"
+ },
+ "MazeA": {
+  "jp": "迷宮の店",
+  "en": "Labyrinth Shop"
+ },
+ "MazeB": {
+  "jp": "迷宮Ｂ",
+  "en": "Labyrinth B"
+ },
+ "MazeS": {
+  "jp": "大石の塞ぐ所",
+  "en": "Boulder Chamber"
+ },
+ "MazeM": {
+  "jp": "迷宮Ｍ",
+  "en": "Labyrinth M"
+ },
+ "Drain": {
+  "jp": "暗い所",
+  "en": "Dark Place"
+ },
+ "Almond": {
+  "jp": "コア",
+  "en": "Core"
+ },
+ "River": {
+  "jp": "水路",
+  "en": "Waterway"
+ },
+ "Eggs2": {
+  "jp": "タマゴ回廊？",
+  "en": "Egg Corridor?"
+ },
+ "Cthu2": {
+  "jp": "クトゥルーの住処？",
+  "en": "Cthulhu's Abode?"
+ },
+ "EggR2": {
+  "jp": "タマゴ監視室？",
+  "en": "Egg Observation Room?"
+ },
+ "EggX2": {
+  "jp": "タマゴ No.00",
+  "en": "Egg No. 00"
+ },
+ "Oside": {
+  "jp": "外壁",
+  "en": "Outer Wall"
+ },
+ "EgEnd2": {
+  "jp": "タマゴ回廊の個室",
+  "en": "Side Room"
+ },
+ "Itoh": {
+  "jp": "倉庫",
+  "en": "Storehouse"
+ },
+ "Cent": {
+  "jp": "大農園",
+  "en": "Plantation"
+ },
+ "Jail1": {
+  "jp": "第１牢",
+  "en": "Jail No. 1"
+ },
+ "Momo": {
+  "jp": "カクレガ",
+  "en": "Hideout"
+ },
+ "lounge": {
+  "jp": "休憩所",
+  "en": "Rest Area"
+ },
+ "CentW": {
+  "jp": "転送室",
+  "en": "Teleporter"
+ },
+ "Jail2": {
+  "jp": "第２牢",
+  "en": "Jail No. 2"
+ },
+ "Blcny1": {
+  "jp": "バルコニー",
+  "en": "Balcony"
+ },
+ "Priso1": {
+  "jp": "最後の洞窟",
+  "en": "Final Cave"
+ },
+ "Ring1": {
+  "jp": "王の玉座",
+  "en": "Throne Room"
+ },
+ "Ring2": {
+  "jp": "王の食卓",
+  "en": "The King's Table"
+ },
+ "Prefa1": {
+  "jp": "プレハブ",
+  "en": "Prefab Building"
+ },
+ "Priso2": {
+  "jp": "最後の洞窟・裏",
+  "en": "Last Cave (Hidden)"
+ },
+ "Ring3": {
+  "jp": "黒い広間",
+  "en": "Black Space"
+ },
+ "Little": {
+  "jp": "リトル家",
+  "en": "Little House"
+ },
+ "Blcny2": {
+  "jp": "バルコニー",
+  "en": "Balcony"
+ },
+ "Fall": {
+  "jp": "落下",
+  "en": "Fall"
+ },
+ "Kings": {
+  "jp": "u",
+  "en": "u"
+ },
+ "Pixel": {
+  "jp": "水路の小部屋",
+  "en": "Waterway Cabin"
+ },
+ "e_Maze": {
+  "jp": "",
+  "en": ""
+ },
+ "e_Jenk": {
+  "jp": "",
+  "en": ""
+ },
+ "e_Malc": {
+  "jp": "",
+  "en": ""
+ },
+ "e_Ceme": {
+  "jp": "",
+  "en": ""
+ },
+ "e_Sky": {
+  "jp": "",
+  "en": ""
+ },
+ "Prefa2": {
+  "jp": "プレハブ",
+  "en": "Prefab House"
+ },
+ "Hell1": {
+  "jp": "聖域地下１階",
+  "en": "Sacred Ground - B1"
+ },
+ "Hell2": {
+  "jp": "聖域地下２階",
+  "en": "Sacred Ground - B2"
+ },
+ "Hell3": {
+  "jp": "聖域地下３階",
+  "en": "Sacred Ground - B3"
+ },
+ "Mapi": {
+  "jp": "物置",
+  "en": "Storage"
+ },
+ "Hell4": {
+  "jp": "通路？",
+  "en": "Passage?"
+ },
+ "Hell42": {
+  "jp": "通路？",
+  "en": "Passage?"
+ },
+ "Statue": {
+  "jp": "石像の間",
+  "en": "Statue Chamber"
+ },
+ "Ballo1": {
+  "jp": "封印の間",
+  "en": "Seal Chamber"
+ },
+ "Ostep": {
+  "jp": "わたり廊下",
+  "en": "Corridor"
+ },
+ "e_Labo": {
+  "jp": "",
+  "en": ""
+ },
+ "Pole": {
+  "jp": "はぐれ銃鍛冶",
+  "en": "Hermit Gunsmith"
+ },
+ "Island": {
+  "jp": "",
+  "en": ""
+ },
+ "Ballo2": {
+  "jp": "封印の間",
+  "en": "Seal Chamber"
+ },
+ "e_Blcn": {
+  "jp": "",
+  "en": ""
+ },
+ "Clock": {
+  "jp": "時計屋",
+  "en": "Clock Room"
+ }
+}

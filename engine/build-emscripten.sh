@@ -23,9 +23,12 @@ CFLAGS="-sUSE_SDL=2 -O2 -w -Isdl1compat -I. -DNDEBUG"
 OBJS=""
 for src in $SRCS; do
   obj="build-em/$(echo "${src#./}" | tr '/' '_').o"
+  extra=""
+  # assist.cpp is always rebuilt: it stamps the build id that saved states are checked against
+  if [ "$src" = "./assist.cpp" ]; then extra="-DASSIST_BUILD=$(date +%s)"; rm -f "$obj"; fi
   if [ ! -f "$obj" ] || [ "$src" -nt "$obj" ]; then
     echo "CXX $src"
-    em++ $CFLAGS -c "$src" -o "$obj" &
+    em++ $CFLAGS $extra -c "$src" -o "$obj" &
     # throttle to 8 parallel jobs
     while [ "$(jobs -r | wc -l)" -ge 8 ]; do sleep 0.2; done
   fi
@@ -36,7 +39,7 @@ wait
 em++ -sUSE_SDL=2 -O2 $OBJS -o "$OUT/nx.js" \
   -sASYNCIFY -sINITIAL_MEMORY=64MB -sALLOW_MEMORY_GROWTH=1 -sENVIRONMENT=web \
   -sEXPORTED_FUNCTIONS=_main \
-  -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,FS,UTF8ToString \
+  -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,FS,UTF8ToString,HEAPU8,HEAPU32 \
   -lidbfs.js \
   --preload-file "$STAGE@/"
 echo "built $OUT/nx.js"

@@ -903,6 +903,8 @@ void map_ChangeTileWithSmoke(int x, int y, int newtile, int nclouds, bool boomfl
 
 
 
+extern bool assist_hide_text;
+
 const char *map_get_stage_name(int mapno)
 {
 	if (mapno == STAGE_KINGS)
@@ -922,7 +924,9 @@ void map_draw_map_name(void)
 {
 	if (game.showmapnametime)
 	{
-		font_draw(game.mapname_x, 84, map_get_stage_name(game.curmap), 0, &shadowfont);
+		// web assist: the page draws the (Japanese) stage name instead
+		if (!assist_hide_text)
+			font_draw(game.mapname_x, 84, map_get_stage_name(game.curmap), 0, &shadowfont);
 		game.showmapnametime--;
 	}
 }
