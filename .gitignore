@@ -1,0 +1,18 @@
+.claude
+
+# Emscripten SDK (fetched by CI / README steps, not project source)
+tools/emsdk/
+
+# Build outputs (rebuilt fresh by CI, not committed)
+web/nx.js
+web/nx.wasm
+web/nx.data
+engine/build-em/
+
+# Data-tool inputs and installs
+tools/node_modules/
+tools/cache/
+
+# OS cruft
+.DS_Store
+Thumbs.db

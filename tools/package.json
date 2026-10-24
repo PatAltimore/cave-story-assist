@@ -1,0 +1,1 @@
+{ "name": "cave-story-assist-tools", "private": true, "type": "module", "dependencies": { "kuromoji": "0.1.2" } }
