@@ -29,6 +29,10 @@ a { color: var(--accent); }
 
 /* Japanese text drawn over the game's own text box */
 #jpbox { position: absolute; display: none; font-family: var(--jp); color: #fff; line-height: 1.9; pointer-events: none; text-shadow: 0 0 2px #000; overflow: visible; }
+/* English line above the text box: blurred until hovered in "hover" mode, like the side panel */
+#enbox { position: absolute; display: none; box-sizing: border-box; font-family: system-ui, sans-serif; color: #dfe6ee; background: rgba(0, 0, 0, .72); border-radius: 3px; padding: .25em .5em; line-height: 1.35; white-space: pre-line; transition: filter .15s; }
+body.tr-hover #enbox { filter: blur(5px); cursor: help; }
+body.tr-hover #enbox:hover { filter: none; }
 #jpbox ruby { ruby-position: over; }
 #jpbox rt { font-size: .55em; color: var(--warm); line-height: 1; }
 .w { cursor: pointer; pointer-events: auto; border-radius: 3px; }
@@ -108,6 +112,7 @@ details > summary { cursor: pointer; color: var(--dim); }
 		<div id="screen">
 			<canvas id="canvas" width="640" height="480" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
 			<div id="jpbox"></div>
+			<div id="enbox"></div>
 			<div id="mapname"></div>
 			<div id="splash">
 				<h1>洞窟物語 <small style="font-size:.5em">Cave Story</small></h1>
@@ -126,12 +131,15 @@ details > summary { cursor: pointer; color: var(--dim); }
 	</div>
 
 	<div id="side">
+		<div class="card" id="entr">
+			<h2>English translation</h2>
+			<div class="seg" id="trseg" title="Applies to the game screen, Now speaking and History">
+				<button data-tr="show" title="Always show the English">Show</button><button data-tr="hover" class="on" title="English is blurred until you hover over it">Blur until hover</button><button data-tr="hide" title="No English anywhere: game, Now speaking or History">Hide</button>
+			</div>
+		</div>
+
 		<div class="card" id="now">
-			<h2><span>Now speaking</span>
-				<span class="seg" id="trseg">
-					<button data-tr="show">EN</button><button data-tr="hover" class="on" title="Blurred until you hover">EN ?</button><button data-tr="hide">hide</button>
-				</span>
-			</h2>
+			<h2>Now speaking</h2>
 			<div class="jp" id="nowjp"><span class="empty">Talk to someone, read a sign, or open the inventory.</span></div>
 			<div class="en" id="nowen"></div>
 			<div class="note" id="nownote"></div>
@@ -210,11 +218,10 @@ details > summary { cursor: pointer; color: var(--dim); }
 		</div>
 
 		<div class="card">
-			<h2>Display</h2>
+			<h2>Display text in game</h2>
 			<div class="seg">
-				<button id="optJp" class="on" title="Draw the Japanese text over the game's text box">日本語 in game</button>
+				<button id="optJp" class="on" title="Draw the Japanese text over the game's text box">日本語</button>
 				<button id="optFuri" class="on">ふりがな</button>
-				<button id="optEn" title="Show or hide the English in Now speaking and History">English</button>
 			</div>
 		</div>
 
@@ -306,7 +313,7 @@ function showNow(c) {
 	positionJp();
 }
 
-function hideJp() { $('jpbox').style.display = 'none'; }
+function hideJp() { $('jpbox').style.display = 'none'; $('enbox').style.display = 'none'; }
 // the engine draws no English of its own while the Japanese display is on
 // With English hidden, the game never shows English at all, so the Japanese display stays on
 // and the engine's own text (credits, save slots, version line) is suppressed too.
@@ -320,8 +327,8 @@ function syncHide() {
 
 // ------------------------------------------------------------------ overlay placement
 function positionJp() {
-	const box = $('jpbox');
-	if (!jpOn() || !current || !window.Module || !Module._assist_tb_visible || !Module._assist_tb_visible()) { box.style.display = 'none'; return; }
+	const box = $('jpbox'), en = $('enbox');
+	if (!jpOn() || !current || !window.Module || !Module._assist_tb_visible || !Module._assist_tb_visible()) { box.style.display = 'none'; en.style.display = 'none'; return; }
 	const k = $('canvas').clientWidth / 320;
 	const L = (i) => Module._assist_tb_layout(i);
 	const x = L(0), y = L(1), w = L(2), textX = L(4);
@@ -330,6 +337,14 @@ function positionJp() {
 	box.style.top = ((y + 6) * k) + 'px';
 	box.style.width = ((x + w - 10 - textX) * k) + 'px';
 	box.style.fontSize = (11.5 * k) + 'px';
+	// the English sits in a strip just above the text box (not drawn at all when English is hidden)
+	if (englishOff() || !current.en) { en.style.display = 'none'; return; }
+	if (en.textContent !== current.en) en.textContent = current.en;
+	en.style.display = 'block';
+	en.style.left = (x * k) + 'px';
+	en.style.width = (w * k) + 'px';
+	en.style.bottom = ((240 - y) * k + 4) + 'px';
+	en.style.fontSize = (9.5 * k) + 'px';
 }
 // ------------------------------------------------------------------ gamepad
 // Any controller the browser reports with the "standard" layout works, Xbox over Bluetooth or USB included.
@@ -480,7 +495,6 @@ function applySettings() {
 	$('optJp').disabled = englishOff();
 	$('optJp').title = englishOff() ? 'Stays on while the English is hidden' : "Draw the Japanese text over the game's text box";
 	$('optFuri').classList.toggle('on', settings.furi);
-	$('optEn').classList.toggle('on', settings.tr !== 'hide');
 	document.querySelectorAll('#trseg button').forEach((b) => b.classList.toggle('on', b.dataset.tr === settings.tr));
 	syncHide();
 	store.set('settings', settings);
@@ -491,12 +505,6 @@ $('trseg').onclick = (e) => {
 	if (!e.target.dataset.tr) return;
 	if (e.target.dataset.tr !== 'hide') settings.trBefore = e.target.dataset.tr;
 	settings.tr = e.target.dataset.tr;
-	applySettings();
-};
-// one button for both "Now speaking" and "History": hide the English, or bring back the last mode
-$('optEn').onclick = () => {
-	if (settings.tr === 'hide') settings.tr = settings.trBefore || 'hover';
-	else { settings.trBefore = settings.tr; settings.tr = 'hide'; }
 	applySettings();
 };
 $('god').onclick = () => {

@@ -286,6 +286,9 @@ void TextBox::DrawTextBox()
 	
 	for(int i=0;i<MSG_NLINES;i++)
 	{
+		// web assist: the page draws the Japanese (and the English strip) itself
+		if (assist_hide_text) { y += MSG_LINE_SPACING; continue; }
+
 		int lineWidth = \
 			font_draw(text_x, y, fLines[i], char_spacing);
 		
