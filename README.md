@@ -1,6 +1,6 @@
 # cave-story-assist
 
-A browser-playable *Cave Story* (洞窟物語) built for **learning Japanese**. You play the game; the original Japanese dialogue is drawn inside the game's own text box, with furigana, and every word is clickable for its reading and meaning. The English translation sits in the sidebar (blurred until you hover, if you want to test yourself), and words you want to keep go into a study list you can export to Anki.
+A browser-playable *Cave Story* (洞窟物語) built for **learning Japanese**. You play the game; the original Japanese dialogue is drawn inside the game's own text box, with furigana, and every word is clickable for its reading and meaning. The English translation sits in the sidebar (blurred until you hover, if you want to test yourself), and words you want to keep go into a study list you can export to Anki as CSV.
 
 Sister project to doom-assist, wolf3d-assist and zork-assist.
 

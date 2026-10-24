@@ -356,6 +356,10 @@ int bytestogo;
 int c;
 int i;
 
+	// SDL1 handed us a zeroed buffer; SDL2 (and Emscripten's backend) does not,
+	// so silence it ourselves or idle channels play back stale memory as noise
+	memset(stream, 0, len);
+
 	// get data for all channels and add it to the mix
 	for(c=0;c<SS_NUM_CHANNELS;c++)
 	{

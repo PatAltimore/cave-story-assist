@@ -53,8 +53,14 @@ bool settings_load(Settings *setfile)
 		// but calling SDL_DisplayFormat seems to actually be slowing things
 		// down. This goes against established wisdom so if you want it back on,
 		// run "displayformat 1" in the console and restart.
+#ifdef __EMSCRIPTEN__
+		// web build: sdl1compat bakes colorkeys into alpha during SDL_DisplayFormat,
+		// so every image goes through it (8-bit colorkey blits aren't reliable in SDL2)
+		setfile->displayformat = true;
+#else
 		setfile->displayformat = false;
-		
+#endif
+
 		return 1;
 	}
 	else

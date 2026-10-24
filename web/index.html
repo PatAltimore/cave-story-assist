@@ -126,7 +126,7 @@ details > summary { cursor: pointer; color: var(--dim); }
 		</div>
 
 		<div class="card">
-			<h2><span>Study list <span id="studycount"></span></span><button id="export" title="Tab-separated, ready to import into Anki">export TSV</button></h2>
+			<h2><span>Study list <span id="studycount"></span></span><button id="export" title="Header row, then word, reading, meaning, example (JP), example (EN); UTF-8, opens in Excel">export CSV</button></h2>
 			<div id="study"></div>
 		</div>
 
@@ -301,11 +301,18 @@ $('study').addEventListener('click', (e) => {
 
 $('export').onclick = () => {
 	if (!study.length) return;
-	const tsv = study.map((s) => [s.b, s.r, s.g, s.ex, s.exEn].map((c) => (c || '').replace(/[\t\n]/g, ' ')).join('\t')).join('\n');
+	const q = (c) => '"' + (c || '').replace(/\s*\n\s*/g, ' ').replace(/"/g, '""') + '"';
+	const header = ['Word', 'Reading', 'Meaning', 'Example (Japanese)', 'Example (English)'];
+	const csv = [header, ...study.map((s) => [s.b, s.r, s.g, s.ex, s.exEn])].map((row) => row.map(q).join(',')).join('\r\n');
 	const a = document.createElement('a');
-	a.href = URL.createObjectURL(new Blob([tsv], { type: 'text/tab-separated-values' }));
-	a.download = 'cave-story-words.tsv';
+	// leading BOM so Excel reads the Japanese as UTF-8
+	a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+	a.download = 'cave-story-words.csv';
+	// attached to the page so every browser treats it as a normal download
+	document.body.appendChild(a);
 	a.click();
+	a.remove();
+	setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 };
 
 // ------------------------------------------------------------------ history
@@ -365,10 +372,15 @@ window.addEventListener('keydown', (e) => {
 	if (document.activeElement === $('canvas') && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Tab'].includes(e.key)) e.preventDefault();
 });
 
+// last several thousand engine log lines, for debugging (window.engineLines)
+const logLines = [];
+function engineLog(t) { logLines.push(t); if (logLines.length > 6000) logLines.shift(); }
+window.engineLines = logLines;
+
 var Module = {
 	canvas: $('canvas'),
-	print: (t) => { if (t && t.indexOf('Entering main loop') >= 0) { $('splash').style.display = 'none'; $('canvas').focus(); } },
-	printErr: () => {},
+	print: (t) => { engineLog(t); if (t && t.indexOf('Entering main loop') >= 0) { $('splash').style.display = 'none'; $('canvas').focus(); } },
+	printErr: (t) => engineLog('E: ' + t),
 	assistText: onText,
 	preRun: [() => {
 		// saves persist in the browser's IndexedDB

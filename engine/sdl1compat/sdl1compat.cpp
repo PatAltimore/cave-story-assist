@@ -48,8 +48,34 @@ extern "C" int SDL1_Flip(SDL_Surface *s)
 	return 0;
 }
 
+// SDL2's colorkey handling differs from SDL1's in ways that bit us (conversion drops it,
+// 8-bit keys aren't honoured on every blit path). For 32-bit surfaces, bake the key into
+// the pixels instead: every pixel of the key color gets alpha 0, and the surface blends.
+static void bake_colorkey(SDL_Surface *s, Uint32 key)
+{
+	Uint32 amask = s->format->Amask;
+	if (s->format->BytesPerPixel != 4 || !amask) return;
+	Uint32 rgbmask = ~amask;
+	if (SDL_MUSTLOCK(s)) SDL_LockSurface(s);
+	for (int y = 0; y < s->h; y++)
+	{
+		Uint32 *row = (Uint32 *)((Uint8 *)s->pixels + y * s->pitch);
+		for (int x = 0; x < s->w; x++)
+			if ((row[x] & rgbmask) == (key & rgbmask)) row[x] &= rgbmask;
+			else row[x] |= amask;
+	}
+	if (SDL_MUSTLOCK(s)) SDL_UnlockSurface(s);
+	SDL_SetColorKey(s, SDL_FALSE, 0);
+	SDL_SetSurfaceBlendMode(s, SDL_BLENDMODE_BLEND);
+}
+
 extern "C" int SDL1_SetColorKey(SDL_Surface *s, Uint32 flag, Uint32 key)
 {
+	if ((flag & 0x1000) && s->format->BytesPerPixel == 4 && s->format->Amask)
+	{
+		bake_colorkey(s, key);
+		return 0;
+	}
 	return SDL_SetColorKey(s, (flag & 0x1000) ? SDL_TRUE : SDL_FALSE, key);
 }
 
@@ -66,7 +92,23 @@ extern "C" int SDL1_SetAlpha(SDL_Surface *s, Uint32 flag, Uint8 alpha)
 
 extern "C" SDL_Surface *SDL1_DisplayFormat(SDL_Surface *s)
 {
-	return SDL_ConvertSurfaceFormat(s, SDL_PIXELFORMAT_ARGB8888, 0);
+	bool keyed = SDL_HasColorKey(s) == SDL_TRUE;
+	Uint32 key = 0;
+	Uint8 r = 0, g = 0, b = 0;
+	if (keyed)
+	{
+		SDL_GetColorKey(s, &key);
+		SDL_GetRGB(key, s->format, &r, &g, &b);
+	}
+
+	// convert without the source's colorkey (SDL2 would turn it into alpha inconsistently)
+	SDL_Surface *conv = SDL_ConvertSurfaceFormat(s, SDL_PIXELFORMAT_ARGB8888, 0);
+	if (conv && keyed)
+	{
+		SDL_SetColorKey(conv, SDL_FALSE, 0);
+		bake_colorkey(conv, SDL_MapRGB(conv->format, r, g, b));
+	}
+	return conv;
 }
 
 extern "C" int SDL1_SetColors(SDL_Surface *s, SDL_Color *colors, int first, int n)
