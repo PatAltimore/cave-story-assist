@@ -121,7 +121,7 @@ details > summary { cursor: pointer; color: var(--dim); }
 			<img id="rewindthumb" alt="Rewind preview">
 			<label for="rewindslider" style="color:var(--dim);font-size:13px">Rewind</label>
 			<input id="rewindslider" type="range" min="0" max="0" value="0" disabled title="Drag back up to a minute, release to jump there">
-			<button id="rewind5" title="Rewind 5 seconds (Backspace)" disabled>⏪ 5s</button>
+			<button id="rewind3" title="Rewind 3 seconds (Backspace)" disabled>⏪ 3s</button>
 		</div>
 	</div>
 
@@ -181,14 +181,14 @@ details > summary { cursor: pointer; color: var(--dim); }
 					<span><kbd>Q</kbd> <kbd>W</kbd></span><span>Inventory / map</span>
 					<span><kbd>Esc</kbd></span><span>Pause menu</span>
 					<span><kbd>Space</kbd></span><span>Freeze frame (handy for reading)</span>
-					<span><kbd>Backspace</kbd></span><span>Rewind 5 seconds</span>
+					<span><kbd>Backspace</kbd></span><span>Rewind 3 seconds</span>
 					<span>🎮 D-pad / left stick</span><span>Move / look / talk</span>
 					<span>🎮 <kbd>A</kbd></span><span>Jump / advance text / confirm</span>
 					<span>🎮 <kbd>X</kbd> <kbd>B</kbd> <kbd>RT</kbd></span><span>Fire</span>
 					<span>🎮 <kbd>LB</kbd> <kbd>RB</kbd></span><span>Previous / next weapon</span>
 					<span>🎮 <kbd>Y</kbd> <kbd>View</kbd></span><span>Inventory / map</span>
 					<span>🎮 <kbd>Menu</kbd></span><span>Pause menu</span>
-					<span>🎮 <kbd>LT</kbd></span><span>Rewind 5 seconds</span>
+					<span>🎮 <kbd>LT</kbd></span><span>Rewind 3 seconds</span>
 				</div>
 			</details>
 		</div>
@@ -356,8 +356,8 @@ function pollPad() {
 	if (b(8)) mask |= 1 << 9;                 // View: map
 	if (b(9)) mask |= 1 << 10;                // Menu: pause
 	Module._assist_set_pad(mask);
-	const lt = b(6);                           // LT: rewind 5 seconds
-	if (lt && !ltHeld && snaps && snaps.length > 1) snaps.rewindTo(snaps.indexSecondsAgo(5));
+	const lt = b(6);                           // LT: rewind 3 seconds
+	if (lt && !ltHeld && snaps && snaps.length > 1) snaps.rewindTo(snaps.indexSecondsAgo(3));
 	ltHeld = lt;
 }
 
@@ -536,7 +536,7 @@ let snaps = null;
 function refreshRewindUi() {
 	if (!snaps) return;
 	const n = snaps.length, sl = $('rewindslider');
-	sl.disabled = n < 2; $('rewind5').disabled = n < 2;
+	sl.disabled = n < 2; $('rewind3').disabled = n < 2;
 	sl.max = Math.max(0, n - 1);
 	if (!dragging) sl.value = n - 1;
 }
@@ -561,13 +561,13 @@ function setupSnapshots() {
 		refreshRewindUi();
 		$('canvas').focus();
 	});
-	const back5 = async () => { if (snaps.length < 2) return; await snaps.rewindTo(snaps.indexSecondsAgo(5)); $('canvas').focus(); };
-	$('rewind5').onclick = back5;
+	const back3 = async () => { if (snaps.length < 2) return; await snaps.rewindTo(snaps.indexSecondsAgo(3)); $('canvas').focus(); };
+	$('rewind3').onclick = back3;
 	window.addEventListener('keydown', (e) => {
-		// Backspace = the 5s button, wherever focus is, except while typing text (the slider and buttons don't count)
+		// Backspace = the 3s button, wherever focus is, except while typing text (the slider and buttons don't count)
 		const el = document.activeElement, typing = el && (el.isContentEditable || el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !/^(range|button|checkbox|radio)$/.test(el.type)));
 		const consoleOpen = Module._assist_console_visible && Module._assist_console_visible();
-		if (e.key === 'Backspace' && !typing && !consoleOpen && !e.repeat) { e.preventDefault(); back5(); }
+		if (e.key === 'Backspace' && !typing && !consoleOpen && !e.repeat) { e.preventDefault(); back3(); }
 	}, true);
 	setInterval(refreshRewindUi, 1000);
 	renderSlots();

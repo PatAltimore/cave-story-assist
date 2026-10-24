@@ -17,6 +17,10 @@ function createSnapshots(Module, { intervalMs = 1000, capacity = 61, onRestore }
 	let base = null;      // full image of entries[0]
 	let last = null;      // full image of the newest entry (to diff against)
 	let lastAt = 0;
+	// entries are stamped with game time: wall clock minus the time spent rewound, so repeated
+	// "back 5s" presses stack (5s, then 10s, ...) instead of landing on the same snapshot
+	let skew = 0;
+	const gameNow = () => performance.now() - skew;
 	let pending = null;   // restore to run at the next tick
 	const entries = [];   // { t, thumb, ui, pages: Uint32Array, data: Uint8Array } (pages/data null for entries[0])
 
@@ -70,7 +74,7 @@ function createSnapshots(Module, { intervalMs = 1000, capacity = 61, onRestore }
 		if (!last) {
 			base = m.slice(0, nPages * PAGE);
 			last = m.slice(0, nPages * PAGE);
-			entries.push({ t: performance.now(), thumb: thumbnail(), ui, pages: null, data: null });
+			entries.push({ t: gameNow(), thumb: thumbnail(), ui, pages: null, data: null });
 			return;
 		}
 		const changed = diff(last, nPages);
@@ -81,7 +85,7 @@ function createSnapshots(Module, { intervalMs = 1000, capacity = 61, onRestore }
 			data.set(m.subarray(p * PAGE, (p + 1) * PAGE), i * PAGE);
 			last.set(m.subarray(p * PAGE, (p + 1) * PAGE), p * PAGE);
 		});
-		entries.push({ t: performance.now(), thumb: thumbnail(), ui, pages, data });
+		entries.push({ t: gameNow(), thumb: thumbnail(), ui, pages, data });
 		while (entries.length > capacity) {
 			entries.shift();
 			// fold the new oldest entry's delta into the base so it becomes a full image
@@ -116,6 +120,7 @@ function createSnapshots(Module, { intervalMs = 1000, capacity = 61, onRestore }
 		last = out;
 		entries.length = index + 1;
 		lastAt = performance.now();
+		skew = lastAt - entries[index].t;
 		return entries[index].ui;
 	}
 
@@ -139,11 +144,11 @@ function createSnapshots(Module, { intervalMs = 1000, capacity = 61, onRestore }
 		get length() { return entries.length; },
 		// memory held by the rewind buffer, in bytes (for debugging)
 		stats() { return { entries: entries.length, base: base ? base.length : 0, last: last ? last.length : 0, deltas: entries.reduce((a, e) => a + (e.data ? e.data.length : 0), 0) }; },
-		ageSeconds(i) { return Math.round((performance.now() - entries[i].t) / 1000); },
+		ageSeconds(i) { return Math.round((gameNow() - entries[i].t) / 1000); },
 		thumbAt(i) { return entries[i] && entries[i].thumb; },
 		// index of the newest snapshot at least `seconds` old (or the oldest we have)
 		indexSecondsAgo(seconds) {
-			const target = performance.now() - seconds * 1000;
+			const target = gameNow() - seconds * 1000;
 			for (let i = entries.length - 1; i >= 0; i--) if (entries[i].t <= target) return i;
 			return 0;
 		},

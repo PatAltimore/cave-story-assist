@@ -1,6 +1,6 @@
 # cave-story-assist
 
-A browser-playable *Cave Story* (洞窟物語) built for **learning Japanese**. You play the game; the original Japanese dialogue is drawn inside the game's own text box, with furigana, and every word is clickable for its reading and meaning. The English translation sits in the sidebar (blurred until you hover, if you want to test yourself), and words you want to keep go into a study list you can export as CSV. Each word shows whether it is a common word and its JLPT level. A **rewind** slider (one minute) and a 5-second rewind button (Backspace) let you undo mistakes, and three **save states** let you save and restore the exact game at any moment.
+A browser-playable *Cave Story* (洞窟物語) built for **learning Japanese**. You play the game; the original Japanese dialogue is drawn inside the game's own text box, with furigana, and every word is clickable for its reading and meaning. The English translation sits in the sidebar (blurred until you hover, if you want to test yourself), and words you want to keep go into a study list you can export as CSV. Each word shows whether it is a common word and its JLPT level. A **rewind** slider (one minute) and a 3-second rewind button (Backspace) let you undo mistakes, and three **save states** let you save and restore the exact game at any moment.
 
 **Play it:** https://pataltimore.github.io/cave-story-assist/
 
@@ -21,7 +21,7 @@ Sister project to doom-assist, wolf3d-assist and zork-assist.
 
 ## Controller
 
-Xbox controllers (Bluetooth or USB) and any other pad the browser reports with the "standard" layout work. Press a button on the pad once so the browser exposes it; the name then shows under the game. D-pad or left stick moves, <kbd>A</kbd> jumps and confirms, <kbd>X</kbd>/<kbd>B</kbd>/RT fire, LB/RB change weapon, <kbd>Y</kbd> opens the inventory, View the map, Menu pauses, and LT rewinds 5 seconds. The page polls the Gamepad API and passes a button mask to the engine (`assist_set_pad` in `engine/assist.cpp`).
+Xbox controllers (Bluetooth or USB) and any other pad the browser reports with the "standard" layout work. Press a button on the pad once so the browser exposes it; the name then shows under the game. D-pad or left stick moves, <kbd>A</kbd> jumps and confirms, <kbd>X</kbd>/<kbd>B</kbd>/RT fire, LB/RB change weapon, <kbd>Y</kbd> opens the inventory, View the map, Menu pauses, and LT rewinds 3 seconds. The page polls the Gamepad API and passes a button mask to the engine (`assist_set_pad` in `engine/assist.cpp`).
 
 ## How the Japanese gets matched
 
@@ -77,7 +77,7 @@ The code is GPL-3.0 (see `LICENSE`). The game files, script text, dictionary dat
 
 ## In-game debug console
 
-Press <kbd>`</kbd> (backtick) while playing, type a command and press Enter; <kbd>Tab</kbd> completes. Backspace deletes text while the console is open (otherwise it is the 5-second rewind). Arguments in `[]` are optional.
+Press <kbd>`</kbd> (backtick) while playing, type a command and press Enter; <kbd>Tab</kbd> completes. Backspace deletes text while the console is open (otherwise it is the 3-second rewind). Arguments in `[]` are optional.
 
 | Command | What it does |
 | --- | --- |
