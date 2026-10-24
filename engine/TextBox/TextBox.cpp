@@ -16,6 +16,7 @@ bool TextBox::Init()
 	fCoords.h = MSG_H;
 	fCoords.x = MSG_X;
 	
+	fAssistTyped = 0;
 	SetFace(0);
 	SetVisible(false);
 	ResetState();
@@ -339,6 +340,7 @@ void TextBox::AddNextChar(void)
 		if (!line_at_once && ch != 13)
 			sound(SND_MSG);
 		
+		if (ch != 13) fAssistTyped++;
 		fLines[fCurLine][fCurLineLen++] = ch;
 		fLines[fCurLine][fCurLineLen] = 0;
 		
@@ -351,6 +353,14 @@ void TextBox::AddNextChar(void)
 		if (line_at_once || ch == 13) continue;
 		else break;
 	}
+}
+
+int TextBox::AssistWaiting()
+{
+	int n = 0;
+	for(uint8_t i = fCWTail; i != fCWHead; i++)
+		if (fCharsWaiting[i] != 10 && fCharsWaiting[i] != 13) n++;
+	return n;
 }
 
 int TextBox::GetMaxLineLen()

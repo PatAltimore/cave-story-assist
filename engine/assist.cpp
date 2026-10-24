@@ -64,6 +64,10 @@ EMSCRIPTEN_KEEPALIVE int assist_tb_layout(int which)
 	return v[which];
 }
 
+// typing progress of the text box: chars typed so far (running total) and chars still queued
+EMSCRIPTEN_KEEPALIVE int assist_tb_typed(void) { return textbox.AssistTyped(); }
+EMSCRIPTEN_KEEPALIVE int assist_tb_waiting(void) { return textbox.AssistWaiting(); }
+
 // 1 while the "stage name" banner that fades in on entering a map is showing
 EMSCRIPTEN_KEEPALIVE int assist_mapname_visible(void) { return game.showmapnametime > 0; }
 

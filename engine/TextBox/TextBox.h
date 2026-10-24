@@ -63,7 +63,11 @@ public:
 	// web assist: where the text area is, in game pixels
 	void GetLayout(int *x, int *y, int *w, int *h, int *text_x, int *has_face);
 	void SetCanSpeedUp(bool newstate);
-	
+
+	// web assist: typing progress, so the page can reveal the Japanese at the same pace
+	int AssistTyped() { return fAssistTyped; }		// visible chars typed so far (running total)
+	int AssistWaiting();						// visible chars still waiting to be typed
+
 private:
 	void DrawTextBox();
 	int GetMaxLineLen();
@@ -87,7 +91,8 @@ private:
 	// chars waiting to be added
 	char fCharsWaiting[256];
 	uint8_t fCWHead, fCWTail;
-	
+	int fAssistTyped;
+
 	int fTextTimer;
 	bool fCanSpeedUp;
 	

@@ -34,6 +34,7 @@ a { color: var(--accent); }
 body.tr-hover #enbox { filter: blur(5px); cursor: help; }
 body.tr-hover #enbox:hover { filter: none; }
 #jpbox ruby { ruby-position: over; }
+#jpbox .c.h, #jpbox rt.h { visibility: hidden; }
 #jpbox rt { font-size: .55em; color: var(--warm); line-height: 1; }
 .w { cursor: pointer; pointer-events: auto; border-radius: 3px; }
 .w:hover, .w.sel { background: rgba(127, 209, 255, .35); }
@@ -290,7 +291,7 @@ function onText(file, scriptno, text) {
 	if (!line || (!line.tokens && !line.ev.j.length)) {
 		// no Japanese for this line (text the script builds at runtime): keep the engine's English off screen
 		current = { tokens: [['（日本語なし）', '', -1]], en: text.trim(), approx: true, file };
-		showNow(current);
+		showNow(current, true);
 		$('nownote').textContent = 'This line has no Japanese in the script data.';
 		syncHide();
 		pushHistory(current);
@@ -299,17 +300,57 @@ function onText(file, scriptno, text) {
 	// unaligned events: show every Japanese line of the event, tied to nothing in particular
 	const tokens = line.tokens || line.ev.j.flatMap((j, i) => (i ? ['\n', ...j] : j));
 	current = { tokens, en: line.en, approx: line.approx, file };
-	showNow(current);
+	showNow(current, true);
 	syncHide();
 	pushHistory(current);
 }
 
-function showNow(c) {
+// The Japanese fills in at the pace the engine types the English (same speed, same blips):
+// every base character is wrapped in a span, and positionJp() reveals them as the engine's
+// typed-character counter advances.
+let typing = null;
+function prepareTyping(box) {
+	const chars = [], rubies = [];
+	const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+	const nodes = [];
+	for (let n = walker.nextNode(); n; n = walker.nextNode()) if (!n.parentElement.closest('rt')) nodes.push(n);
+	for (const n of nodes) {
+		const frag = document.createDocumentFragment();
+		for (const ch of Array.from(n.nodeValue)) {
+			if (/\s/.test(ch)) { frag.appendChild(document.createTextNode(ch)); continue; }
+			const sp = document.createElement('span');
+			sp.className = 'c'; sp.textContent = ch;
+			frag.appendChild(sp); chars.push(sp);
+		}
+		n.replaceWith(frag);
+	}
+	box.querySelectorAll('ruby').forEach((r) => {
+		const first = r.querySelector('.c');
+		if (first) rubies.push({ first, rts: [...r.querySelectorAll('rt')] });
+	});
+	const total = Math.max(1, Module._assist_tb_waiting());
+	typing = { chars, rubies, start: Module._assist_tb_typed(), total, shown: -1 };
+	updateTyping();
+}
+function updateTyping() {
+	if (!typing) return;
+	const t = typing, frac = Math.min(1, (Module._assist_tb_typed() - t.start) / t.total);
+	const n = frac >= 1 ? t.chars.length : Math.floor(frac * t.chars.length);
+	if (n === t.shown) return;
+	t.shown = n;
+	t.chars.forEach((sp, i) => sp.classList.toggle('h', i >= n));
+	t.rubies.forEach((r) => r.rts.forEach((rt) => rt.classList.toggle('h', t.chars.indexOf(r.first) >= n)));
+	if (n >= t.chars.length) typing = null;
+}
+
+function showNow(c, typed) {
 	const html = tokensHtml(c.tokens);
 	$('nowjp').innerHTML = html;
 	$('nowen').textContent = c.en;
 	$('nownote').textContent = c.approx ? 'The English and Japanese scripts are split differently here, so the whole scene is shown.' : '';
 	$('jpbox').innerHTML = html;
+	typing = null;
+	if (typed && window.Module && Module._assist_tb_typed) prepareTyping($('jpbox'));
 	positionJp();
 }
 
@@ -327,6 +368,7 @@ function syncHide() {
 
 // ------------------------------------------------------------------ overlay placement
 function positionJp() {
+	updateTyping();
 	const box = $('jpbox'), en = $('enbox');
 	if (!jpOn() || !current || !window.Module || !Module._assist_tb_visible || !Module._assist_tb_visible()) { box.style.display = 'none'; en.style.display = 'none'; return; }
 	const k = $('canvas').clientWidth / 320;
