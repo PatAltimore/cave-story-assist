@@ -2,6 +2,8 @@
 
 A browser-playable *Cave Story* (洞窟物語) built for **learning Japanese**. You play the game; the original Japanese dialogue is drawn inside the game's own text box, with furigana, and every word is clickable for its reading and meaning. The English translation sits in the sidebar (blurred until you hover, if you want to test yourself), and words you want to keep go into a study list you can export as CSV. Each word shows whether it is a common word and its JLPT level. A **rewind** slider (one minute) and a 5-second rewind button (Backspace) let you undo mistakes, and three **save states** let you save and restore the exact game at any moment.
 
+**Play it:** https://pataltimore.github.io/cave-story-assist/
+
 Sister project to doom-assist, wolf3d-assist and zork-assist.
 
 ## What's here

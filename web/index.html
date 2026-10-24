@@ -97,6 +97,9 @@ kbd { background: var(--panel2); border: 1px solid var(--line); border-bottom-wi
 .keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 13px; }
 details > summary { cursor: pointer; color: var(--dim); }
 .credit { font-size: 12px; color: var(--dim); }
+.cmds { font-size: 12px; max-height: 260px; overflow-y: auto; }
+.cmds code { font: 12px ui-monospace, Consolas, monospace; color: var(--accent); white-space: nowrap; }
+.cmds span code { white-space: normal; }
 </style>
 </head>
 <body class="tr-hover">
@@ -145,7 +148,30 @@ details > summary { cursor: pointer; color: var(--dim); }
 				<button id="god">God mode</button>
 				<button id="heal">Full heal</button>
 			</div>
-			<p class="credit" style="margin:8px 0 0">The in-game console (<kbd>`</kbd>) has more debug commands: see the README.</p>
+			<details style="margin-top:8px"><summary>Debug commands</summary>
+				<p class="credit" style="margin:6px 0">Press <kbd>`</kbd> in the game, type a command, press <kbd>Enter</kbd> (<kbd>Tab</kbd> completes). Backspace edits the line while the console is open.</p>
+				<div class="keys cmds">
+					<code>god [0/1]</code><span>God mode</span>
+					<code>hp N</code><span>Set HP (<code>maxhp N</code> for the maximum)</span>
+					<code>giveweapon N</code><span>1 Snake, 2 Polar Star, 3 Fireball, 4 Machine Gun, 5 Missile, 7 Bubbler, 9 Blade, 10 Super Missile, 12 Nemesis, 13 Spur</span>
+					<code>dropweapon [N]</code><span>Remove a weapon</span>
+					<code>level 1-3</code><span>Current weapon's level (<code>xp N</code>, <code>ammo N</code>, <code>maxammo N</code>)</span>
+					<code>warp N</code><span>Go to stage N, or <code>warp &lt;stage name&gt;</code> (English name)</span>
+					<code>script N</code><span>Run script event N of this stage</span>
+					<code>flag N</code><span>Toggle story flag N (<code>clearflags</code> clears all)</span>
+					<code>giveitem N</code><span>Add inventory item N (<code>takeitem N</code> removes it)</span>
+					<code>equip name [0/1]</code><span>booster08, booster20, map, armsbarrier, turbocharge, airtank, mimigamask, whimstar, nikumaru</span>
+					<code>spawn [n] object</code><span>Spawn an enemy or object (<code>animate N</code> sets its state)</span>
+					<code>killall</code><span>Kill everything shootable on screen</span>
+					<code>infinitedamage</code><span>Your shots do huge damage</span>
+					<code>movemode 0/1/2</code><span>0 normal, 1 zero-gravity, 2 free-fly</span>
+					<code>music name</code><span>Play a song (<code>sound N</code> plays an effect)</span>
+					<code>boa N</code><span>Set the stage boss's state</span>
+					<code>cre</code><span>Jump to the good-ending credits</span>
+					<code>reset</code><span>Reset the game</span>
+					<code>fps [0/1]</code><span>Show frames per second</span>
+				</div>
+			</details>
 			<details style="margin-top:8px"><summary>Controls</summary>
 				<div class="keys" style="margin-top:6px">
 					<span><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></span><span>Move / look / talk (<kbd>↓</kbd>)</span>
