@@ -9,6 +9,7 @@
 #endif
 
 extern bool assist_hide_text;
+extern bool assist_hide_english;
 
 // Called once per game tick from gameloop(), right after the tick has been drawn. At that
 // point nothing is suspended in an ASYNCIFY sleep, so every bit of game state lives in
@@ -23,6 +24,10 @@ void assist_frame_hook(void) { js_frame_hook(); }
 extern "C" {
 
 EMSCRIPTEN_KEEPALIVE void assist_set_hide_text(int hide) { assist_hide_text = (hide != 0); }
+EMSCRIPTEN_KEEPALIVE void assist_set_hide_english(int hide) { assist_hide_english = (hide != 0); }
+
+// the debug console (backtick) is open: it uses Backspace to delete, so the page must not rewind
+EMSCRIPTEN_KEEPALIVE int assist_console_visible(void) { return console.IsVisible(); }
 
 EMSCRIPTEN_KEEPALIVE int assist_tb_visible(void) { return textbox.IsVisible(); }
 

@@ -56,11 +56,44 @@ node build-script-data.mjs ../data/jp-tsc ../data/en/data ../web/script-data.jso
 
 Pushing to `main` runs `.github/workflows/pages.yml`, which builds the engine in CI and publishes `web/` to GitHub Pages (repo Settings → Pages → Source: GitHub Actions).
 
-## Credits and licenses
+## License
+
+The code is GPL-3.0 (see `LICENSE`). The game files, script text, dictionary data and font keep their own licenses; see `NOTICE.md` for the full table.
+
+## Credits
 
 - *Cave Story* © Studio Pixel / Daisuke "Pixel" Amaya, freeware. English translation by Aeon Genesis.
 - NXEngine © Caitlin Shaw, GPL-3.0 (see `engine/LICENSE`); portability fork by [EXL](https://github.com/EXL/NXEngine).
-- Japanese dictionary data: [JMdict](https://www.edrdg.org/jmdict/j_jmdict.html) © the Electronic Dictionary Research and Development Group, [CC BY-SA 4.0](https://www.edrdg.org/edrdg/licence.html), via [jmdict-simplified](https://github.com/scriptin/jmdict-simplified). Glosses in `web/script-data.json` are derived from it.
+- Japanese dictionary data: [JMdict](https://www.edrdg.org/jmdict/j_jmdict.html) © EDRDG, [CC BY-SA 4.0](https://www.edrdg.org/edrdg/licence.html), via [jmdict-simplified](https://github.com/scriptin/jmdict-simplified). Glosses in `web/script-data.json` are derived from it.
 - JLPT levels: Jonathan Waller's [Tanos JLPT lists](https://www.tanos.co.uk/jlpt/) (CC BY; unofficial, not published by the JLPT organizers), via [Bluskyo/JLPT_Vocabulary](https://github.com/Bluskyo/JLPT_Vocabulary).
 - Tokenizer: [kuromoji.js](https://github.com/takuyaa/kuromoji.js) (Apache-2.0, IPADIC).
-- Font: DotGothic16 (SIL OFL), loaded from Google Fonts.
+- Font: DotGothic16 (SIL OFL), bundled as a subset in `web/fonts/`.
+
+## In-game debug console
+
+Press <kbd>`</kbd> (backtick) while playing, type a command and press Enter; <kbd>Tab</kbd> completes. Backspace deletes text while the console is open (otherwise it is the 5-second rewind). Arguments in `[]` are optional.
+
+| Command | What it does |
+| --- | --- |
+| `god [0/1]` | God mode on/off |
+| `hp N`, `maxhp N` | Set current / maximum HP |
+| `giveweapon N`, `dropweapon [N]` | Give / remove a weapon: 1 Snake, 2 Polar Star, 3 Fireball, 4 Machine Gun, 5 Missile Launcher, 7 Bubbler, 9 Blade, 10 Super Missile, 12 Nemesis, 13 Spur |
+| `level 1-3`, `xp N`, `ammo N`, `maxammo N` | Current weapon's level, experience and ammo |
+| `warp N` / `warp <stage name>` | Go to a stage by number or by the start of its (English) name |
+| `script N` | Run script event N from the current stage |
+| `flag N`, `clearflags` | Toggle story flag N / clear all flags |
+| `giveitem N`, `takeitem N` | Add / remove inventory item N |
+| `equip <name> [0/1]` | Equip: `booster08`, `booster20`, `map`, `armsbarrier`, `turbocharge`, `airtank`, `mimigamask`, `whimstar`, `nikumaru` |
+| `spawn [count] <object name>` | Spawn an object or enemy; `animate N` sets its state |
+| `killall` | Kill every shootable object on screen |
+| `infinitedamage [0/1]` | Your shots do huge damage |
+| `movemode 0/1/2` | 0 normal, 1 zero-gravity, 2 free-fly (also <kbd>V</kbd> toggles fly in debug) |
+| `boa N` | Set the stage boss's state |
+| `sound N`, `music <name or N>` | Play a sound effect / song |
+| `qua [x]` | Screen shake |
+| `cre` | Jump to the good-ending credits |
+| `reset` | Reset the game |
+| `fps [0/1]` | Show frames per second |
+| `player->hide 0/1`, `player->inputs_locked 0/1`, `game.frozen 0/1`, `textbox.SetVisible 0/1` | Low-level toggles |
+
+Settings commands (`instant-quit`, `no-quake-in-hell`, `inhibit-fullscreen`, `emulate-bugs`, `displayformat`, `skip-intro`) are saved in the engine's own settings file, which this web build doesn't persist.

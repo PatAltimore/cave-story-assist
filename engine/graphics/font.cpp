@@ -560,6 +560,8 @@ SDL_Rect dstrect;
 }
 
 
+bool assist_hide_english = false;
+
 int GetFontWidth(const char *text, int spacing, bool is_shaded)
 {
 int wd;
@@ -620,6 +622,17 @@ int font_draw(int x, int y, const char *text, int spacing, NXFont *font)
 	x *= SCALE;
 	y *= SCALE;
 	spacing *= SCALE;
+
+	// web assist: with the English display off, engine-drawn text (credits, save slots, version
+	// line...) is measured but not drawn. The pause/options menus stay readable so they can be used.
+	if (assist_hide_english && !game.paused)
+	{
+		bool was_rendering = rendering;
+		rendering = false;
+		int wd = text_draw(x, y, text, spacing, font);
+		rendering = was_rendering;
+		return wd / SCALE;
+	}
 
 	return (text_draw(x, y, text, spacing, font) / SCALE);
 }

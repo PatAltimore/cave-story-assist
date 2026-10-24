@@ -1,0 +1,17 @@
+# Keep line endings stable no matter who checks the repo out (the build scripts must stay LF for Linux CI).
+* text=auto eol=lf
+
+# Game data and other binaries: never touch the bytes. (.tsc scripts are encrypted binary, not text.)
+*.tsc binary
+*.pbm binary
+*.bmp binary
+*.sif binary
+*.dat binary
+*.exe binary
+*.pxt binary
+*.org binary
+*.woff2 binary
+*.ttf binary
+*.png binary
+*.ico binary
+*.wasm binary
