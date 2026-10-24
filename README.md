@@ -21,7 +21,7 @@ Sister project to doom-assist, wolf3d-assist and zork-assist.
 
 ## Controller
 
-Xbox controllers (Bluetooth or USB) and any other pad the browser reports with the "standard" layout work. Press a button on the pad once so the browser exposes it; the name then shows under the game. D-pad or left stick moves, <kbd>A</kbd> jumps and confirms, <kbd>X</kbd>/<kbd>B</kbd>/RT fire, LB/RB change weapon, <kbd>Y</kbd> opens the inventory, View the map, Menu pauses, and LT rewinds 3 seconds. The page polls the Gamepad API and passes a button mask to the engine (`assist_set_pad` in `engine/assist.cpp`).
+Xbox controllers (Bluetooth or USB) and any other pad the browser reports with the "standard" layout work. Press a button on the pad once so the browser exposes it; the name then shows under the game. D-pad or left stick moves, <kbd>A</kbd> jumps and confirms, <kbd>X</kbd>/<kbd>B</kbd>/RT fire, LB/RB change weapon, <kbd>Y</kbd> opens the inventory, View the map, Menu pauses and resumes, and LT rewinds 3 seconds. The page polls the Gamepad API and passes a button mask to the engine (`assist_set_pad` in `engine/assist.cpp`).
 
 ## How the Japanese gets matched
 

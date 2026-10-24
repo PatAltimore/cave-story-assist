@@ -26,8 +26,17 @@ void assist_apply_pad(void)
 	for(int i=0;i<(int)(sizeof(pad_keys)/sizeof(pad_keys[0]));i++)
 	{
 		int bit = 1 << i;
-		if (pad_mask & bit) inputs[pad_keys[i]] = true;
-		else if (pad_prev & bit) inputs[pad_keys[i]] = false;
+		int key = pad_keys[i];
+		// Pause, inventory and map toggle on a fresh press, and the engine wipes the input array
+		// when it changes mode. Re-asserting a held button every poll would make it flip straight
+		// back (pause, resume, pause... while held), so those follow press and release edges only,
+		// as keyboard events do.
+		bool toggle = (key == ESCKEY || key == INVENTORYKEY || key == MAPSYSTEMKEY);
+		if (pad_mask & bit)
+		{
+			if (!toggle || !(pad_prev & bit)) inputs[key] = true;
+		}
+		else if (pad_prev & bit) inputs[key] = false;
 	}
 	pad_prev = pad_mask;
 }
@@ -71,6 +80,7 @@ EMSCRIPTEN_KEEPALIVE int assist_tb_waiting(void) { return textbox.AssistWaiting(
 // 1 while the "stage name" banner that fades in on entering a map is showing
 EMSCRIPTEN_KEEPALIVE int assist_mapname_visible(void) { return game.showmapnametime > 0; }
 
+EMSCRIPTEN_KEEPALIVE int assist_paused(void) { return game.paused; }
 EMSCRIPTEN_KEEPALIVE int assist_hp(void) { return player ? player->hp : 0; }
 EMSCRIPTEN_KEEPALIVE int assist_max_hp(void) { return player ? player->maxHealth : 0; }
 EMSCRIPTEN_KEEPALIVE const char *assist_stage(void) { return stages[game.curmap].filename; }

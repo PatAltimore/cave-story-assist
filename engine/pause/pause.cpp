@@ -111,7 +111,13 @@ void pause_tick()
 	if (justpushed(ESCKEY))
 	{
 		lastinputs[ESCKEY] = true;
+#ifdef __EMSCRIPTEN__
+		// web assist: there is nowhere to quit to (the page would just freeze), so Esc / the
+		// controller's Menu button resumes, the same as it pauses
+		game.pause(false);
+#else
 		game.running = false;
+#endif
 		return;
 	}
 }
