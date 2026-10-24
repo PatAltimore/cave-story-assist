@@ -19,6 +19,10 @@ Sister project to doom-assist, wolf3d-assist and zork-assist.
 - `data/en/` — the freeware Windows release with the Aeon Genesis English translation (v1.0.0.6). NXEngine extracts the sprites, sounds and stage tables from `Doukutsu.exe` on first boot.
 - `data/jp-tsc/` — the script (`.tsc`) files from Studio Pixel's original Japanese freeware release (`dou_1006.zip`), used only to build `script-data.json`.
 
+## Controller
+
+Xbox controllers (Bluetooth or USB) and any other pad the browser reports with the "standard" layout work. Press a button on the pad once so the browser exposes it; the name then shows under the game. D-pad or left stick moves, <kbd>A</kbd> jumps and confirms, <kbd>X</kbd>/<kbd>B</kbd>/RT fire, LB/RB change weapon, <kbd>Y</kbd> opens the inventory, View the map, Menu pauses, and LT rewinds 5 seconds. The page polls the Gamepad API and passes a button mask to the engine (`assist_set_pad` in `engine/assist.cpp`).
+
 ## How the Japanese gets matched
 
 The Japanese and English releases share the same event numbers, so a line is identified by *(stage file, event number, text)*. The engine reports the English text it is showing; the page finds that line in `script-data.json` and shows the Japanese at the same position in the event. For the ~8% of events where the translation split the text differently, the whole Japanese scene is shown instead and flagged as approximate. While the Japanese display is on, the engine draws no English of its own for dialogue, item text or the stage-name banner. Engine-drawn UI that isn't in the scripts (title menu, pause/options screens, credits, save-slot names) is still English.

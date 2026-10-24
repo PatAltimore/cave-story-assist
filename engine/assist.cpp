@@ -8,7 +8,30 @@
 #define ASSIST_BUILD 0
 #endif
 
+#include "input.h"
+
 extern bool assist_hide_text;
+extern bool inputs[INPUT_COUNT];
+
+// Gamepad state, set by the page each frame as a bit mask (see web/index.html pollPad):
+// 0 left, 1 right, 2 up, 3 down, 4 jump, 5 fire, 6 previous weapon, 7 next weapon,
+// 8 inventory, 9 map, 10 pause. Folded into the normal input array after keyboard events,
+// so keyboard and pad can be mixed.
+static int pad_mask = 0, pad_prev = 0;
+static const int pad_keys[] = { LEFTKEY, RIGHTKEY, UPKEY, DOWNKEY, JUMPKEY, FIREKEY,
+	PREVWPNKEY, NEXTWPNKEY, INVENTORYKEY, MAPSYSTEMKEY, ESCKEY };
+
+void assist_apply_pad(void)
+{
+	for(int i=0;i<(int)(sizeof(pad_keys)/sizeof(pad_keys[0]));i++)
+	{
+		int bit = 1 << i;
+		if (pad_mask & bit) inputs[pad_keys[i]] = true;
+		else if (pad_prev & bit) inputs[pad_keys[i]] = false;
+	}
+	pad_prev = pad_mask;
+}
+
 extern bool assist_hide_english;
 
 // Called once per game tick from gameloop(), right after the tick has been drawn. At that
@@ -22,6 +45,8 @@ EM_JS(void, js_frame_hook, (), {
 void assist_frame_hook(void) { js_frame_hook(); }
 
 extern "C" {
+
+EMSCRIPTEN_KEEPALIVE void assist_set_pad(int mask) { pad_mask = mask; }
 
 EMSCRIPTEN_KEEPALIVE void assist_set_hide_text(int hide) { assist_hide_text = (hide != 0); }
 EMSCRIPTEN_KEEPALIVE void assist_set_hide_english(int hide) { assist_hide_english = (hide != 0); }

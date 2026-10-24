@@ -1,6 +1,9 @@
 
 #include "nx.h"
 #include "input.fdh"
+#ifdef __EMSCRIPTEN__
+extern void assist_apply_pad(void);
+#endif
 
 #ifdef _MOTOEZX
 #include "platform/EZX/EZX_SDL_PollEvent.h"
@@ -270,6 +273,10 @@ int ino, key;
 			break;
 		}
 	}
+	
+#ifdef __EMSCRIPTEN__
+	assist_apply_pad();		// web assist: gamepad state from the page
+#endif
 }
 
 // keys that we don't want to send to the console

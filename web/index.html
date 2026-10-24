@@ -116,7 +116,7 @@ details > summary { cursor: pointer; color: var(--dim); }
 				<button id="startbtn" disabled>Start</button>
 			</div>
 		</div>
-		<div id="statusbar"><span id="stage">&nbsp;</span><span id="hpline"></span></div>
+		<div id="statusbar"><span id="stage">&nbsp;</span><span id="padstatus" title="Controller connected"></span><span id="hpline"></span></div>
 		<div id="rewind">
 			<img id="rewindthumb" alt="Rewind preview">
 			<label for="rewindslider" style="color:var(--dim);font-size:13px">Rewind</label>
@@ -182,6 +182,13 @@ details > summary { cursor: pointer; color: var(--dim); }
 					<span><kbd>Esc</kbd></span><span>Pause menu</span>
 					<span><kbd>Space</kbd></span><span>Freeze frame (handy for reading)</span>
 					<span><kbd>Backspace</kbd></span><span>Rewind 5 seconds</span>
+					<span>🎮 D-pad / left stick</span><span>Move / look / talk</span>
+					<span>🎮 <kbd>A</kbd></span><span>Jump / advance text / confirm</span>
+					<span>🎮 <kbd>X</kbd> <kbd>B</kbd> <kbd>RT</kbd></span><span>Fire</span>
+					<span>🎮 <kbd>LB</kbd> <kbd>RB</kbd></span><span>Previous / next weapon</span>
+					<span>🎮 <kbd>Y</kbd> <kbd>View</kbd></span><span>Inventory / map</span>
+					<span>🎮 <kbd>Menu</kbd></span><span>Pause menu</span>
+					<span>🎮 <kbd>LT</kbd></span><span>Rewind 5 seconds</span>
 				</div>
 			</details>
 		</div>
@@ -324,7 +331,38 @@ function positionJp() {
 	box.style.width = ((x + w - 10 - textX) * k) + 'px';
 	box.style.fontSize = (11.5 * k) + 'px';
 }
+// ------------------------------------------------------------------ gamepad
+// Any controller the browser reports with the "standard" layout works, Xbox over Bluetooth or USB included.
+// (Browsers only expose a pad after you press a button on it once.)
+let padLabel = '', ltHeld = false;
+function pollPad() {
+	const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter((p) => p && p.connected) : [];
+	const gp = pads.find((p) => p.mapping === 'standard') || pads[0];
+	const label = gp ? '🎮 ' + gp.id.replace(/\s*\(.*$/, '').slice(0, 36) : '';
+	if (label !== padLabel) { padLabel = label; $('padstatus').textContent = label; }
+	if (!gp || !window.Module || !Module._assist_set_pad) return;
+	const b = (i) => !!(gp.buttons[i] && gp.buttons[i].pressed);
+	const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
+	let mask = 0;
+	if (b(14) || ax < -0.5) mask |= 1 << 0;   // left
+	if (b(15) || ax > 0.5) mask |= 1 << 1;    // right
+	if (b(12) || ay < -0.5) mask |= 1 << 2;   // up
+	if (b(13) || ay > 0.5) mask |= 1 << 3;    // down
+	if (b(0)) mask |= 1 << 4;                 // A: jump / confirm
+	if (b(2) || b(1) || b(7)) mask |= 1 << 5; // X, B, RT: fire
+	if (b(4)) mask |= 1 << 6;                 // LB: previous weapon
+	if (b(5)) mask |= 1 << 7;                 // RB: next weapon
+	if (b(3)) mask |= 1 << 8;                 // Y: inventory
+	if (b(8)) mask |= 1 << 9;                 // View: map
+	if (b(9)) mask |= 1 << 10;                // Menu: pause
+	Module._assist_set_pad(mask);
+	const lt = b(6);                           // LT: rewind 5 seconds
+	if (lt && !ltHeld && snaps && snaps.length > 1) snaps.rewindTo(snaps.indexSecondsAgo(5));
+	ltHeld = lt;
+}
+
 function frame() {
+	pollPad();
 	positionJp();
 	if (window.Module && Module._assist_stage) {
 		try {
