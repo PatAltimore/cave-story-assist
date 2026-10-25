@@ -316,6 +316,7 @@ function onText(file, scriptno, text) {
 // every base character is wrapped in a span, and positionJp() reveals them as the engine's
 // typed-character counter advances.
 let typing = null;
+let jpVersion = 0, jpFitKey = '';   // bumped whenever the box's content changes, so the fit is redone
 // wraps every base character of the box in a span; returns {chars, rubies}
 function wrapChars(box) {
 	const chars = [], rubies = [];
@@ -351,7 +352,7 @@ function updateTyping() {
 	const m = t.units.length;
 	const u = frac >= 1 ? m - 1 : Math.min(m - 1, Math.floor(frac * m));
 	if (u !== t.unit) {
-		t.unit = u; t.shown = -1;
+		t.unit = u; t.shown = -1; jpVersion++;
 		box.innerHTML = tokensHtml(t.units[u]);
 		Object.assign(t, wrapChars(box));
 	}
@@ -372,7 +373,7 @@ function showNow(c, typed) {
 	// the game's text box holds one chunk at a time: when the English and Japanese scripts are split
 	// differently, show the matching Japanese lines one after another instead of the whole scene
 	const units = c.units && c.units.length ? c.units : [c.tokens];
-	typing = null;
+	typing = null; jpVersion++;
 	if (typed && window.Module && Module._assist_tb_typed) prepareTyping($('jpbox'), units);
 	else $('jpbox').innerHTML = tokensHtml(units[units.length - 1]);
 	positionJp();
@@ -397,12 +398,19 @@ function positionJp() {
 	if (!jpOn() || !current || !window.Module || !Module._assist_tb_visible || !Module._assist_tb_visible()) { box.style.display = 'none'; en.style.display = 'none'; return; }
 	const k = $('canvas').clientWidth / 320;
 	const L = (i) => Module._assist_tb_layout(i);
-	const x = L(0), y = L(1), w = L(2), textX = L(4);
+	const x = L(0), y = L(1), w = L(2), h = L(3), textX = L(4);
 	box.style.display = 'block';
 	box.style.left = (textX * k) + 'px';
 	box.style.top = ((y + 6) * k) + 'px';
 	box.style.width = ((x + w - 10 - textX) * k) + 'px';
-	box.style.fontSize = (11.5 * k) + 'px';
+	// a chunk with more lines than the box has room for (or lines wrapped by long text) shrinks to fit
+	const fitKey = k + '|' + y + '|' + h + '|' + w + '|' + jpVersion;
+	if (fitKey !== jpFitKey) {
+		jpFitKey = fitKey;
+		box.style.fontSize = (11.5 * k) + 'px';
+		const avail = (y + h - 8) * k - box.offsetTop;
+		if (box.scrollHeight > avail && avail > 0) box.style.fontSize = (11.5 * k * Math.max(0.5, avail / box.scrollHeight)) + 'px';
+	}
 	// the English sits in a strip just above the text box (not drawn at all when English is hidden)
 	if (englishOff() || !current.en) { en.style.display = 'none'; return; }
 	if (en.textContent !== current.en) en.textContent = current.en;
