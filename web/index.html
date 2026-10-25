@@ -299,7 +299,14 @@ function onText(file, scriptno, text) {
 	}
 	// unaligned events: show every Japanese line of the event, tied to nothing in particular
 	const tokens = line.tokens || line.ev.j.flatMap((j, i) => (i ? ['\n', ...j] : j));
-	current = { tokens, en: line.en, approx: line.approx, file };
+	let units = null;
+	if (!line.tokens) {
+		// map this English chunk onto its share of the Japanese lines
+		const js = line.ev.j, M = js.length, N = Math.max(1, line.ev.t.length);
+		const a = Math.min(M - 1, Math.round(line.idx * M / N)), b = Math.max(a + 1, Math.round((line.idx + 1) * M / N));
+		units = js.slice(a, b);
+	}
+	current = { tokens, units, en: line.en, approx: line.approx, file };
 	showNow(current, true);
 	syncHide();
 	pushHistory(current);
@@ -309,7 +316,8 @@ function onText(file, scriptno, text) {
 // every base character is wrapped in a span, and positionJp() reveals them as the engine's
 // typed-character counter advances.
 let typing = null;
-function prepareTyping(box) {
+// wraps every base character of the box in a span; returns {chars, rubies}
+function wrapChars(box) {
 	const chars = [], rubies = [];
 	const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
 	const nodes = [];
@@ -328,19 +336,32 @@ function prepareTyping(box) {
 		const first = r.querySelector('.c');
 		if (first) rubies.push({ first, rts: [...r.querySelectorAll('rt')] });
 	});
+	return { chars, rubies };
+}
+// units: the Japanese lines to show one after another while this chunk types (usually just one)
+function prepareTyping(box, units) {
 	const total = Math.max(1, Module._assist_tb_waiting());
-	typing = { chars, rubies, start: Module._assist_tb_typed(), total, shown: -1 };
+	typing = { units, unit: -1, start: Module._assist_tb_typed(), total, chars: [], rubies: [], shown: -1 };
 	updateTyping();
 }
 function updateTyping() {
 	if (!typing) return;
-	const t = typing, frac = Math.min(1, (Module._assist_tb_typed() - t.start) / t.total);
-	const n = frac >= 1 ? t.chars.length : Math.floor(frac * t.chars.length);
+	const t = typing, box = $('jpbox');
+	const frac = Math.min(1, (Module._assist_tb_typed() - t.start) / t.total);
+	const m = t.units.length;
+	const u = frac >= 1 ? m - 1 : Math.min(m - 1, Math.floor(frac * m));
+	if (u !== t.unit) {
+		t.unit = u; t.shown = -1;
+		box.innerHTML = tokensHtml(t.units[u]);
+		Object.assign(t, wrapChars(box));
+	}
+	const local = frac >= 1 ? 1 : frac * m - u;
+	const n = local >= 1 ? t.chars.length : Math.floor(local * t.chars.length);
 	if (n === t.shown) return;
 	t.shown = n;
 	t.chars.forEach((sp, i) => sp.classList.toggle('h', i >= n));
 	t.rubies.forEach((r) => r.rts.forEach((rt) => rt.classList.toggle('h', t.chars.indexOf(r.first) >= n)));
-	if (n >= t.chars.length) typing = null;
+	if (frac >= 1 && n >= t.chars.length) typing = null;
 }
 
 function showNow(c, typed) {
@@ -348,9 +369,12 @@ function showNow(c, typed) {
 	$('nowjp').innerHTML = html;
 	$('nowen').textContent = c.en;
 	$('nownote').textContent = c.approx ? 'The English and Japanese scripts are split differently here, so the whole scene is shown.' : '';
-	$('jpbox').innerHTML = html;
+	// the game's text box holds one chunk at a time: when the English and Japanese scripts are split
+	// differently, show the matching Japanese lines one after another instead of the whole scene
+	const units = c.units && c.units.length ? c.units : [c.tokens];
 	typing = null;
-	if (typed && window.Module && Module._assist_tb_typed) prepareTyping($('jpbox'));
+	if (typed && window.Module && Module._assist_tb_typed) prepareTyping($('jpbox'), units);
+	else $('jpbox').innerHTML = tokensHtml(units[units.length - 1]);
 	positionJp();
 }
 
@@ -571,7 +595,7 @@ window.engineLines = logLines;
 // ------------------------------------------------------------------ rewind and save states
 // what the page itself needs to put back after the engine's memory is restored
 function uiState() {
-	return { current: current && { tokens: current.tokens, en: current.en, approx: current.approx, file: current.file }, cursor: { ...cursor } };
+	return { current: current && { tokens: current.tokens, units: current.units, en: current.en, approx: current.approx, file: current.file }, cursor: { ...cursor } };
 }
 function applyUiState(ui) {
 	cursor = (ui && ui.cursor) || { key: '', idx: -1 };
