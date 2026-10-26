@@ -87,8 +87,21 @@ const KPOS = {
 	'形容詞': (t) => /^adj-i/.test(t), '接続詞': (t) => t === 'conj', '感動詞': (t) => t === 'int' || t === 'exp',
 	'連体詞': (t) => t === 'adj-pn' || t === 'adj-f', '接頭詞': (t) => t === 'pref', '形容動詞': (t) => /^adj-na/.test(t),
 };
-function lookup(forms, kpos) {
+function glossOf(e, n = 3) {
+	return e.sense.slice(0, n).map((s) => s.gloss.slice(0, 2).map((g) => g.text).join(', ')).join('; ');
+}
+// readingHira: how the original text reads this word (from the tokenizer). Entries whose kana
+// agree with it win, which sorts out homographs (今日 きょう / こんにち, 人気 にんき / ひとけ ...).
+// Inflected words only compare the stem, since the tokenizer's reading is of the inflected form.
+function lookup(forms, kpos, readingHira = '', surface = '') {
 	const match = KPOS[kpos];
+	const readsAs = (e) => {
+		if (!readingHira) return true;
+		// inflected: drop the okurigana tail (食べた -> たべ) and compare the stem
+		const tail = surface && forms[0] !== surface ? (surface.match(/[぀-ヿー]*$/) || [''])[0].length : 0;
+		const stem = tail && tail < readingHira.length ? readingHira.slice(0, readingHira.length - tail) : readingHira;
+		return e.kana.some((k) => (tail ? k.text.startsWith(stem) : k.text === readingHira));
+	};
 	for (const f of forms) {
 		if (!f || f === '*') continue;
 		const cands = jmIndex.get(f);
@@ -97,16 +110,20 @@ function lookup(forms, kpos) {
 			const tags = c.e.sense.flatMap((s) => s.partOfSpeech);
 			const m = match && tags.some(match) ? 0 : 1;
 			const first = match && c.e.sense[0].partOfSpeech.some(match) ? 0 : 1;
-			return m * 4e6 + first * 2e6 + (c.common ? 0 : 1e6) + (c.e.id % 1e6) / 1e6;
+			const rd = hasKanji(f) && !readsAs(c.e) ? 1 : 0;
+			return rd * 8e6 + m * 4e6 + first * 2e6 + (c.common ? 0 : 1e6) + (c.e.id % 1e6) / 1e6;
 		};
-		const hit = cands.reduce((a, c) => (score(c) < score(a) ? c : a));
+		const ranked = [...new Map(cands.map((c) => [c.e.id, c])).values()].sort((a, b) => score(a) - score(b));
+		const hit = ranked[0];
 		// a bare kana word with no entry of the right part of speech is more likely a
 		// stray match (kanji homophone) than a real hit; better no gloss than a wrong one
 		if (match && !/[一-鿿]/.test(f) && !hit.e.sense.some((s) => s.partOfSpeech.some(match))) continue;
-		const senses = hit.e.sense.slice(0, 3);
-		const gloss = senses.map((s) => s.gloss.slice(0, 2).map((g) => g.text).join(', ')).join('; ');
-		const pos = [...new Set(hit.e.sense[0].partOfSpeech.map((p) => POS[p]).filter(Boolean))].join(', ');
-		return { g: gloss, p: pos, kana: hit.e.kana[0].text, common: hit.common };
+		const pos = (e) => [...new Set(e.sense[0].partOfSpeech.map((p) => POS[p]).filter(Boolean))].join(', ');
+		// other entries for the same spelling, so a wrong first pick can still be corrected by eye
+		const alts = ranked.slice(1, 3)
+			.filter((c) => !hasKanji(f) ? true : readsAs(c.e) || !readingHira)
+			.map((c) => ({ g: glossOf(c.e, 2), p: pos(c.e), r: c.e.kana[0].text, ...(c.common ? { c: 1 } : {}) }));
+		return { g: glossOf(hit.e), p: pos(hit.e), kana: hit.e.kana[0].text, common: hit.common, alts };
 	}
 	return null;
 }
@@ -136,11 +153,12 @@ function wordId(tok) {
 	const base = tok.basic_form && tok.basic_form !== '*' ? tok.basic_form : tok.surface_form;
 	const key = base + '|' + tok.pos + '|' + reading;
 	if (wordIds.has(key)) return wordIds.get(key);
-	const info = tok.pos === '記号' ? null : lookup([base, tok.surface_form], tok.pos);
+	const info = tok.pos === '記号' ? null : lookup([base, tok.surface_form], tok.pos, reading, tok.surface_form);
 	const w = { b: base };
 	if (info) {
 		w.g = info.g; if (info.p) w.p = info.p; if (info.kana !== base) w.r = info.kana;
 		if (info.common) w.c = 1;
+		if (info.alts.length) w.a = info.alts;
 	}
 	// JLPT level (Tanos lists, via Bluskyo/JLPT_Vocabulary): prefer the entry whose reading matches
 	const jl = jlpt[base] || (info && jlpt[info.kana]);
@@ -150,12 +168,45 @@ function wordId(tok) {
 	return words.length - 1;
 }
 
+// Longest-match pass (what hover dictionaries such as Yomitan and Meikipop do): the tokenizer splits
+// compounds like 動き出す or 迷宮入り into pieces, so try to join runs of up to five tokens when the
+// joined text, or its dictionary form, is a JMdict headword that contains kanji.
+const CONTENT = new Set(['名詞', '動詞', '形容詞', '副詞', '連体詞', '接頭詞']);
+function mergeCompounds(toks) {
+	const out = [];
+	for (let i = 0; i < toks.length; ) {
+		let merged = null;
+		for (let n = Math.min(5, toks.length - i); n >= 2 && !merged; n--) {
+			const run = toks.slice(i, i + n);
+			if (run.some((t) => t.pos === '記号' || /^[\s　]+$/.test(t.surface_form))) continue;
+			if (!run.some((t) => CONTENT.has(t.pos))) continue;
+			const surface = run.map((t) => t.surface_form).join('');
+			if (!hasKanji(surface)) continue;
+			const last = run[n - 1];
+			const lastBase = last.basic_form && last.basic_form !== '*' ? last.basic_form : last.surface_form;
+			const base = run.slice(0, -1).map((t) => t.surface_form).join('') + lastBase;
+			if (!(jmIndex.has(surface) || jmIndex.has(base))) continue;
+			if (run.some((t) => !t.reading || t.reading === '*')) continue;
+			merged = {
+				surface_form: surface,
+				basic_form: jmIndex.has(base) ? base : surface,
+				reading: run.map((t) => t.reading).join(''),
+				pos: run[0].pos,
+				len: n,
+			};
+		}
+		out.push(merged || toks[i]);
+		i += merged ? merged.len : 1;
+	}
+	return out;
+}
+
 // tokens: [surface, rubyReading|"", wordId]; "\n" is a bare string
 function tokenize(text) {
 	const out = [];
 	text.split('\n').forEach((line, li) => {
 		if (li) out.push('\n');
-		for (const tok of tokenizer.tokenize(line)) {
+		for (const tok of mergeCompounds(tokenizer.tokenize(line))) {
 			const reading = tok.reading && tok.reading !== '*' ? kata2hira(tok.reading) : '';
 			const rb = reading ? ruby(tok.surface_form, reading) : null;
 			const id = /^[\s　]+$/.test(tok.surface_form) || tok.pos === '記号' ? -1 : wordId(tok);

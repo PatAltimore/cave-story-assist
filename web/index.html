@@ -33,6 +33,8 @@ a { color: var(--accent); }
 #enbox { position: absolute; display: none; box-sizing: border-box; font-family: system-ui, sans-serif; color: #dfe6ee; background: rgba(0, 0, 0, .72); border-radius: 3px; padding: .25em .5em; line-height: 1.35; white-space: pre-line; transition: filter .15s; }
 body.tr-hover #enbox { filter: blur(5px); cursor: help; }
 body.tr-hover #enbox:hover { filter: none; }
+#wordbody .alt { margin-top: 6px; padding-left: 8px; border-left: 2px solid var(--line); font-size: 13px; }
+#wordbody .alt .g { color: var(--dim); }
 #jpbox ruby { ruby-position: over; }
 #jpbox .c.h, #jpbox rt.h { visibility: hidden; }
 #jpbox rt { font-size: .55em; color: var(--warm); line-height: 1; }
@@ -489,6 +491,7 @@ function showWord(id, surface, ruby) {
 		<div style="margin-top:6px">${w.c ? '<span class="badge common" title="Appears among the most frequently used words (JMdict)">Common word</span>' : ''}${w.l ? `<span class="badge jlpt jlpt${w.l}" title="JLPT level from the Tanos word lists (unofficial)">JLPT N${w.l}</span>` : ''}${!w.c && !w.l && w.g ? '<span class="badge" title="Not flagged common, not on the JLPT lists">Uncommon</span>' : ''}</div>
 		${inflected}
 		<div class="gl">${w.g ? esc(w.g) : '<span class="empty">No dictionary entry found.</span>'}</div>
+		${w.a && w.a.length ? `<div class="alts"><div class="empty" style="font-size:12px;margin-top:8px">Other entries for ${esc(w.b)}</div>${w.a.map((a) => `<div class="alt"><span class="rd">${esc(a.r)}</span>${a.p ? ` <span class="pos">${esc(a.p)}</span>` : ''}${a.c ? ' <span class="badge common">Common</span>' : ''}<div class="g">${esc(a.g)}</div></div>`).join('')}</div>` : ''}
 		<div class="row">
 			<button id="addword" ${saved ? 'disabled' : ''}>${saved ? 'In study list' : '+ Study list'}</button>
 			<a href="https://jisho.org/search/${encodeURIComponent(w.b)}" target="_blank" rel="noopener">Jisho ↗</a>
