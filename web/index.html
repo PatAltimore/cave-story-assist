@@ -452,6 +452,7 @@ function pollPad() {
 	ltHeld = lt;
 }
 
+let bannerUp = false;   // the map-name banner was showing last frame
 function frame() {
 	pollPad();
 	positionJp();
@@ -462,7 +463,10 @@ function frame() {
 			const name = st ? st.jp : Module.UTF8ToString(Module._assist_stage_title());
 			$('stage').textContent = name || '';
 			const mn = $('mapname');
-			if (jpOn() && st && Module._assist_mapname_visible()) {
+			const banner = Module._assist_mapname_visible();
+			if (banner && !bannerUp && st && file !== '0') pushHistory({ tokens: st.t || [[st.jp, '', -1]], en: st.en || '', approx: false, file });
+			bannerUp = !!banner;
+			if (jpOn() && st && banner) {
 				const k = $('canvas').clientWidth / 320;
 				mn.textContent = st.jp;
 				mn.style.top = (80 * k) + 'px';

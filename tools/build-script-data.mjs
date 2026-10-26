@@ -250,6 +250,8 @@ for (const rel of files) {
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 const stagesFile = path.join(jpDir, "stage-names.json");
 const stages = fs.existsSync(stagesFile) ? JSON.parse(fs.readFileSync(stagesFile, "utf8")) : {};
+// tokenize the stage names too (the banner shown on entering a map goes into the page's history)
+for (const st of Object.values(stages)) if (st.jp) st.t = tokenize(st.jp);
 fs.writeFileSync(outFile, JSON.stringify({ words, scripts: result, stages }));
 console.log(`events ${nEvents}, aligned ${aligned} (${((100 * aligned) / nEvents).toFixed(1)}%), ops ${ops}, words ${words.length}`);
 console.log(`wrote ${outFile} (${(fs.statSync(outFile).size / 1e6).toFixed(2)} MB)`);
