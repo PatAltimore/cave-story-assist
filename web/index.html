@@ -45,6 +45,7 @@ body.nofuri rt { display: none; }
 .dim { opacity: .55; }
 
 #splash { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(0, 0, 0, .86); text-align: center; padding: 20px; }
+#loadmsg { position: absolute; left: 10px; bottom: 10px; display: none; padding: 4px 10px; border-radius: 4px; background: rgba(0, 0, 0, .6); color: #cfe6f5; font-size: 13px; pointer-events: none; }
 #splash h1 { margin: 0; font: 400 28px var(--jp); }
 #splash p { margin: 0; color: var(--dim); max-width: 36em; }
 #splash button { font-size: 17px; padding: 10px 26px; background: #24445a; border-color: var(--accent); }
@@ -117,6 +118,7 @@ details > summary { cursor: pointer; color: var(--dim); }
 			<div id="jpbox"></div>
 			<div id="enbox"></div>
 			<div id="mapname"></div>
+			<div id="loadmsg"></div>
 			<div id="splash">
 				<h1>洞窟物語 <small style="font-size:.5em">Cave Story</small></h1>
 				<p>Play the game with the original Japanese dialogue on screen. Click any word for its reading and meaning, save it to your study list, and check your understanding against the English.</p>
@@ -703,7 +705,9 @@ $('slots').addEventListener('click', async (e) => {
 
 var Module = {
 	canvas: $('canvas'),
-	print: (t) => { engineLog(t); if (t && t.indexOf('Entering main loop') >= 0) { $('splash').style.display = 'none'; $('canvas').focus(); } },
+	print: (t) => { engineLog(t); if (t && t.indexOf('Entering main loop') >= 0) { $('splash').style.display = 'none'; $('loadmsg').style.display = 'none'; $('canvas').focus(); } },
+	// download / unpack progress from Emscripten ("Downloading data... (1234/5678)")
+	setStatus: (t) => { const m = $('loadmsg'); if (t) { m.textContent = t; m.style.display = 'block'; } },
 	printErr: (t) => engineLog('E: ' + t),
 	assistText: onText,
 	preRun: [() => {
@@ -736,8 +740,11 @@ var Module = {
 })();
 
 $('startbtn').onclick = () => {
+	// get the overlay out of the way at once so the game's own loading is visible
+	$('splash').style.display = 'none';
+	$('loadmsg').textContent = 'Starting…';
+	$('loadmsg').style.display = 'block';
 	$('startbtn').disabled = true;
-	$('splashmsg').textContent = 'Starting…';
 	const s = document.createElement('script');
 	s.src = 'nx.js';
 	document.body.appendChild(s);
