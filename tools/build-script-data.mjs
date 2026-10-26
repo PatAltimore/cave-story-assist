@@ -148,13 +148,34 @@ const tokenizer = await new Promise((res, rej) =>
 
 const words = [];
 const wordIds = new Map();
+
+// The tokenizer's dictionary treats godan potentials (逃げ出せる, 書ける, 読める...) as ordinary
+// one-step verbs, so it reports the potential itself as the "dictionary form". When JMdict has no
+// such ichidan verb but does have the matching godan verb (逃げ出す), use that as the lemma and
+// flag the word as a potential form.
+const POT_END = { 'え': 'う', 'け': 'く', 'げ': 'ぐ', 'せ': 'す', 'て': 'つ', 'ね': 'ぬ', 'べ': 'ぶ', 'め': 'む', 'れ': 'る' };
+function potentialLemma(tok, base) {
+	if (tok.pos !== '動詞' || tok.conjugated_type !== '一段' || !/る$/.test(base)) return null;
+	const u = POT_END[base[base.length - 2]];
+	if (!u) return null;
+	const entries = (f) => (jmIndex.get(f) || []).map((c) => c.e);
+	const isV1 = (e) => e.sense.some((s) => s.partOfSpeech.includes('v1'));
+	if (entries(base).some(isV1)) return null;    // a real verb of its own (食べる, 見える, 切れる)
+	const cand = base.slice(0, -2) + u;
+	if (!hasKanji(base) && cand.length < 4) return null;   // short kana-only forms are usually something else (だけんど)
+	return entries(cand).some((e) => e.sense.some((s) => s.partOfSpeech.some((p) => /^v5/.test(p)))) ? cand : null;
+}
+
 function wordId(tok) {
 	const reading = tok.reading && tok.reading !== '*' ? kata2hira(tok.reading) : '';
-	const base = tok.basic_form && tok.basic_form !== '*' ? tok.basic_form : tok.surface_form;
-	const key = base + '|' + tok.pos + '|' + reading;
+	let base = tok.basic_form && tok.basic_form !== '*' ? tok.basic_form : tok.surface_form;
+	const pot = potentialLemma(tok, base);
+	if (pot) base = pot;
+	const key = base + '|' + tok.pos + '|' + reading + (pot ? '|pot' : '');
 	if (wordIds.has(key)) return wordIds.get(key);
 	const info = tok.pos === '記号' ? null : lookup([base, tok.surface_form], tok.pos, reading, tok.surface_form);
 	const w = { b: base };
+	if (pot) w.f = 'potential';
 	if (info) {
 		w.g = info.g; if (info.p) w.p = info.p; if (info.kana !== base) w.r = info.kana;
 		if (info.common) w.c = 1;

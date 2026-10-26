@@ -489,7 +489,8 @@ function showWord(id, surface, ruby) {
 	document.querySelectorAll('.w.sel').forEach((e) => e.classList.remove('sel'));
 	document.querySelectorAll(`.w[data-id="${id}"]`).forEach((e) => e.classList.add('sel'));
 	const reading = w.r || (ruby && ruby.length && surface === w.b ? ruby : '');
-	const inflected = surface !== w.b ? `<div class="empty" style="font-size:12px">${esc(surface)} → dictionary form <b style="font-family:var(--jp)">${esc(w.b)}</b></div>` : '';
+	const formNote = w.f ? `<div class="empty" style="font-size:12px"><b style="font-family:var(--jp)">${esc(surface)}</b> is the ${esc(w.f)} form of <b style="font-family:var(--jp)">${esc(w.b)}</b> ("can ${esc((w.g || '').split(/[,;]/)[0].replace(/^to /, ''))}")</div>` : '';
+	const inflected = w.f ? formNote : surface !== w.b ? `<div class="empty" style="font-size:12px">${esc(surface)} → dictionary form <b style="font-family:var(--jp)">${esc(w.b)}</b></div>` : '';
 	const saved = study.some((s) => s.b === w.b);
 	$('wordbody').classList.remove('empty');
 	$('wordbody').innerHTML = `
