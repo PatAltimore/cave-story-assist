@@ -212,7 +212,7 @@ details > summary { cursor: pointer; color: var(--dim); }
 		</div>
 
 		<div class="card">
-			<h2><span>Study list <span id="studycount"></span></span><button id="export" title="Header row, then word, reading, meaning; UTF-8, opens in Excel">export CSV</button></h2>
+			<h2><span>Study list <span id="studycount"></span></span><button id="export" title="Header row, then word, reading, meaning, common, JLPT level; UTF-8, opens in Excel">export CSV</button></h2>
 			<div id="study"></div>
 		</div>
 
@@ -504,7 +504,7 @@ function showWord(id, surface, ruby) {
 			<a href="https://jisho.org/search/${encodeURIComponent(w.b)}" target="_blank" rel="noopener">Jisho ↗</a>
 		</div>`;
 	$('addword').onclick = () => {
-		study.push({ b: w.b, r: reading, g: w.g || '', p: w.p || '' });
+		study.push({ b: w.b, r: reading, g: w.g || '', p: w.p || '', c: w.c ? 1 : 0, l: w.l || 0 });
 		store.set('study', study);
 		renderStudy();
 		showWord(id, surface, ruby);
@@ -526,8 +526,16 @@ $('study').addEventListener('click', (e) => {
 $('export').onclick = () => {
 	if (!study.length) return;
 	const q = (c) => '"' + (c || '').replace(/\s*\n\s*/g, ' ').replace(/"/g, '""') + '"';
-	const header = ['Word', 'Reading', 'Meaning'];
-	const csv = [header, ...study.map((s) => [s.b, s.r, s.g])].map((row) => row.map(q).join(',')).join('\r\n');
+	// The same labels the word panel shows (Jisho-style): "Common word" / "Uncommon"
+	// and the JLPT level. Words saved before these were stored are looked up again.
+	const byBase = new Map();
+	for (const w of Object.values(data.words)) if (!byBase.has(w.b)) byBase.set(w.b, w);
+	const labels = (s) => {
+		const w = s.c !== undefined && s.l !== undefined ? s : byBase.get(s.b) || {};
+		return [w.c ? 'Common word' : !w.l && s.g ? 'Uncommon' : '', w.l ? 'N' + w.l : ''];
+	};
+	const header = ['Word', 'Reading', 'Meaning', 'Common', 'JLPT'];
+	const csv = [header, ...study.map((s) => [s.b, s.r, s.g, ...labels(s)])].map((row) => row.map(q).join(',')).join('\r\n');
 	const a = document.createElement('a');
 	// leading BOM so Excel reads the Japanese as UTF-8
 	a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
