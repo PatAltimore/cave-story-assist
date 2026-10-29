@@ -212,7 +212,7 @@ details > summary { cursor: pointer; color: var(--dim); }
 		</div>
 
 		<div class="card">
-			<h2><span>Study list <span id="studycount"></span></span><button id="export" title="Header row, then word, reading, meaning, common, JLPT level; UTF-8, opens in Excel">export CSV</button></h2>
+			<h2><span>Study list <span id="studycount"></span></span><button id="export" title="Header row, then word, reading, meaning, common, JLPT level, part of speech; UTF-8, opens in Excel">export CSV</button></h2>
 			<div id="study"></div>
 		</div>
 
@@ -527,14 +527,15 @@ $('export').onclick = () => {
 	if (!study.length) return;
 	const q = (c) => '"' + (c || '').replace(/\s*\n\s*/g, ' ').replace(/"/g, '""') + '"';
 	// The same labels the word panel shows (Jisho-style): "Common word" / "Uncommon"
-	// and the JLPT level. Words saved before these were stored are looked up again.
+	// the JLPT level and the part of speech. Words saved before these were stored
+	// are looked up again.
 	const byBase = new Map();
 	for (const w of Object.values(data.words)) if (!byBase.has(w.b)) byBase.set(w.b, w);
 	const labels = (s) => {
 		const w = s.c !== undefined && s.l !== undefined ? s : byBase.get(s.b) || {};
-		return [w.c ? 'Common word' : !w.l && s.g ? 'Uncommon' : '', w.l ? 'N' + w.l : ''];
+		return [w.c ? 'Common word' : !w.l && s.g ? 'Uncommon' : '', w.l ? 'N' + w.l : '', s.p || w.p || ''];
 	};
-	const header = ['Word', 'Reading', 'Meaning', 'Common', 'JLPT'];
+	const header = ['Word', 'Reading', 'Meaning', 'Common', 'JLPT', 'Part of speech'];
 	const csv = [header, ...study.map((s) => [s.b, s.r, s.g, ...labels(s)])].map((row) => row.map(q).join(',')).join('\r\n');
 	const a = document.createElement('a');
 	// leading BOM so Excel reads the Japanese as UTF-8
