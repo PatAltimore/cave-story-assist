@@ -34,7 +34,14 @@ char SSInit(void)
 	fmt.freq = SAMPLE_RATE;
     fmt.format = AUDIO_S16;
     fmt.channels = 2;
+#ifdef __EMSCRIPTEN__
+    // web: the audio callback runs on the page's main thread, which the game loop, the rewind
+    // snapshots and the browser all compete for. A 512-sample buffer (~11ms) underruns constantly
+    // (stutter, clicks, clipped notes); this one rides out a ~90ms stall.
+    fmt.samples = 2048;
+#else
     fmt.samples = 512;
+#endif
 	fmt.callback = mixaudio;
 	fmt.userdata = NULL;
 	
